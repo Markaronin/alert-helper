@@ -1,12 +1,31 @@
 import React, { Component } from "react";
-import { Alert, AlertSeverity } from "./Alert";
-import { alertHelper } from "./AlertHelper";
+
+type AlertSeverity = "info" | "error" | "warn";
+
+interface Alert {
+    severity: AlertSeverity;
+    message: string;
+    duration: number;
+}
+
+class AlertHelper {
+    addAlertFunction?: (alert: Alert) => void;
+
+    addAlert(alert: Alert | Omit<Alert, "duration">): void {
+        if (this.addAlertFunction) {
+            this.addAlertFunction({ duration: 5, ...alert });
+        } else {
+            throw new Error("Somehow addAlert was not defined");
+        }
+    }
+}
+
+export const alertHelper = new AlertHelper();
 
 interface AlertHelperComponentProps {}
 interface AlertHelperComponentState {
     alerts: Record<number, Alert>;
 }
-
 export class AlertHelperComponent extends Component<AlertHelperComponentProps, AlertHelperComponentState> {
     private nextAlertId = 0;
     private timeouts: number[] = [];
