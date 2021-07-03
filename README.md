@@ -1,0 +1,1 @@
+This is a package for a react component that manages popup alerts for users
