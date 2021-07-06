@@ -9,15 +9,24 @@ interface Alert {
 }
 
 class AlertHelper {
-    addAlertFunction?: (alert: Alert) => void;
+    private readonly alertQueue: Alert[] = [];
+    private hasAlertFunctionBeenSet = false;
 
-    addAlert(alert: Alert | Omit<Alert, "duration">): void {
-        if (this.addAlertFunction) {
-            this.addAlertFunction({ duration: 5, ...alert });
+    public setAlertFunction(newAlertFunction: (alert: Alert) => void) {
+        if (!this.hasAlertFunctionBeenSet) {
+            this.hasAlertFunctionBeenSet = true;
+            this.addAlert = newAlertFunction;
+            this.alertQueue.forEach((alert) => this.addAlert(alert));
+            // Clean queue out
+            this.alertQueue.splice(0, this.alertQueue.length);
         } else {
-            throw new Error("Somehow addAlert was not defined");
+            throw new Error("Tried to set alert function after it was already set");
         }
     }
+
+    public addAlert: (alert: Alert) => void = (alert: Alert) => {
+        this.alertQueue.push(alert);
+    };
 }
 
 export const alertHelper = new AlertHelper();
@@ -31,7 +40,7 @@ export class AlertHelperComponent extends Component<AlertHelperComponentProps, A
     private timeouts: number[] = [];
     constructor(props: AlertHelperComponentProps) {
         super(props);
-        alertHelper.addAlertFunction = (alert: Alert) => this.addAlertFunction(alert);
+        alertHelper.setAlertFunction((alert: Alert) => this.addAlertFunction(alert));
         this.state = {
             alerts: {},
         };
