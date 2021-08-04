@@ -5,12 +5,13 @@ type AlertSeverity = "info" | "error" | "warn";
 interface Alert {
     severity: AlertSeverity;
     message: string;
-    duration: number;
+    duration?: number;
 }
 
 class AlertHelper {
     private readonly alertQueue: Alert[] = [];
     private hasAlertFunctionBeenSet = false;
+    public static readonly DEFAULT_ALERT_DURATION = 5;
 
     public setAlertFunction(newAlertFunction: (alert: Alert) => void) {
         if (!this.hasAlertFunctionBeenSet) {
@@ -51,6 +52,7 @@ export class AlertHelperComponent extends Component<AlertHelperComponentProps, A
         const newAlerts: Record<number, Alert> = {};
         newAlerts[newAlertId] = alert;
         this.setState({ alerts: { ...this.state.alerts, ...newAlerts } });
+        const duration = alert.duration || AlertHelper.DEFAULT_ALERT_DURATION;
         this.timeouts.push(
             window.setTimeout(() => {
                 this.setState({
@@ -58,7 +60,7 @@ export class AlertHelperComponent extends Component<AlertHelperComponentProps, A
                         Object.entries(this.state.alerts).filter((entry) => parseInt(entry[0]) !== newAlertId),
                     ),
                 });
-            }, alert.duration * 1000),
+            }, duration * 1000),
         );
     };
 
